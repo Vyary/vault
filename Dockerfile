@@ -27,4 +27,4 @@ COPY --from=builder /app/bin/main /main
 EXPOSE 8080
 
 # Run the binary
-ENTRYPOINT ["/main"]
+ENTRYPOINT ["./main"]
