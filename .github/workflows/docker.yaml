@@ -37,16 +37,9 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./Dockerfile
+          # context: .
+          # file: ./Dockerfile
           push: true
           tags: |
             vyary/vault:latest
             vyary/vault:${{ github.sha }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: vyary/vault
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
