@@ -19,6 +19,9 @@ RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/main 
 
 FROM debian:bookworm-slim
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates
+
 COPY --from=builder /app/bin/main bin/main
 
 # Expose port (optional, only needed if app listens on a port)
