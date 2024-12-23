@@ -45,7 +45,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-
+  
 	client := &database.LibsqlClient{DB: db}
 
 	server := server.New(client, port)
