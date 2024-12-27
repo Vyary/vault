@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
 	"vault/internal/database"
 	"vault/internal/server"
 )
@@ -33,8 +32,8 @@ func gracefulShutdown(apiServer *http.Server, done chan struct{}) {
 
 func main() {
 	port := os.Getenv("PORT")
-	primaryUrl := os.Getenv("TURSO_URL")
-	authToken := os.Getenv("TURSO_AUTH_TOKEN")
+	primaryUrl := os.Getenv("DB_URL")
+	authToken := os.Getenv("DB_AUTH_TOKEN")
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
@@ -45,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-  
+
 	client := &database.LibsqlClient{DB: db}
 
 	server := server.New(client, port)

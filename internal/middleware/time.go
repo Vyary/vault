@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -16,7 +17,7 @@ func Time(next http.Handler) http.Handler {
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 			duration := time.Since(start)
-			slog.Info("Completed", "method", r.Method, "path", r.URL.Path, "took", duration.String())
+			slog.Info(fmt.Sprintf("%s %s - %s", r.Method, r.URL.Path, duration.String()), "method", r.Method, "path", r.URL.Path, "took", duration.String())
 		}()
 
 		next.ServeHTTP(w, r)

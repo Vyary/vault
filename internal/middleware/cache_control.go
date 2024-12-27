@@ -1,14 +1,15 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 )
 
-func CacheControl(next http.Handler) http.Handler {
+func CacheControl(next http.Handler, minutes int) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		const cacheDuration = 10 * time.Minute
-		const cacheControlHeader = "public, max-age=600"
+		cacheDuration := time.Duration(minutes) * time.Minute
+		cacheControlHeader := fmt.Sprintf("public, max-age=%.0f", cacheDuration.Seconds())
 
 		now := time.Now()
 		ifModifiedSince := r.Header.Get("If-Modified-Since")

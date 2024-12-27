@@ -3,13 +3,16 @@ package server
 import (
 	"net/http"
 	"vault/internal/middleware"
+	"vault/ui"
 )
 
 func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.Handle("/", http.NotFoundHandler())
-	mux.Handle("GET /api/v1/uniques2", middleware.CacheControl(s.GetUniques2()))
+	fileServer := http.FileServer(http.FS(ui.Web))
+
+	mux.Handle("GET /", middleware.CacheControl(fileServer, 24*60))
+	mux.Handle("GET /v1/uniques2", middleware.CacheControl(s.GetUniques2(), 5))
 
 	return mux
 }
