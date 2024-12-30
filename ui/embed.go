@@ -2,7 +2,10 @@ package ui
 
 import (
 	"embed"
+	"io/fs"
 )
 
-//go:embed assets/* index.html
-var Web embed.FS
+//go:embed client/*
+var WebClient embed.FS
+
+var Web, _ = fs.Sub(WebClient, "client")
