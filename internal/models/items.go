@@ -7,8 +7,9 @@ type Price struct {
 }
 
 type UniquesDTO struct {
-	Name  string `json:"name"`
-	Base  string `json:"base"`
-	Image string `json:"image"`
-	Price Price  `json:"price"`
+	ItemID int    `json:"id"`
+	Name   string `json:"name"`
+	Base   string `json:"base"`
+	Image  string `json:"image"`
+	Price  Price  `json:"price"`
 }
