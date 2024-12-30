@@ -13,3 +13,10 @@ type UniquesDTO struct {
 	Image  string `json:"image"`
 	Price  Price  `json:"price"`
 }
+
+type ExchDTO struct {
+	ItemID int    `json:"id"`
+	Name   string `json:"name"`
+	Image  string `json:"image"`
+	Price  Price  `json:"price"`
+}

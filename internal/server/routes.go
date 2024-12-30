@@ -13,6 +13,8 @@ func (s *Server) routes() http.Handler {
 
 	mux.Handle("GET /", middleware.CacheControl(fileServer, 24*60))
 	mux.Handle("GET /v1/uniques2", middleware.CacheControl(s.GetUniques2(), 5))
+	mux.Handle("GET /v1/runes2", middleware.CacheControl(s.GetRunes2(), 5))
+	mux.Handle("GET /v1/cores2", middleware.CacheControl(s.GetCores2(), 5))
 
 	return mux
 }

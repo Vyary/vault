@@ -40,3 +40,39 @@ func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
 
 	return uniques, nil
 }
+
+func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
+	query := fmt.Sprintf(`
+  SELECT u.item_id, u.name, COALESCE(i.image, ''), COALESCE(p.value, 0), COALESCE(p.type, ''), COALESCE(p.listed, 0)
+  FROM %s u
+  LEFT JOIN images i ON u.item_id = i.item_id
+  LEFT JOIN (
+    SELECT item_id, value, type, listed
+    FROM prices p1
+    WHERE p1.timestamp = (
+      SELECT MAX(p2.timestamp)
+      FROM prices p2
+      WHERE p2.item_id = p1.item_id
+    )
+  ) p ON u.item_id = p.item_id`, tableName)
+
+	rows, err := l.DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query %s for poe2: %w", tableName, err)
+	}
+
+	var exchItems []models.ExchDTO
+
+	for rows.Next() {
+		var exchItem models.ExchDTO
+
+		err := rows.Scan(&exchItem.ItemID, &exchItem.Name, &exchItem.Image, &exchItem.Price.Value, &exchItem.Price.Type, &exchItem.Price.Listed)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan poe2 %s: %w", tableName, err)
+		}
+
+		exchItems = append(exchItems, exchItem)
+	}
+
+	return exchItems, nil
+}
