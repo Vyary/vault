@@ -36,3 +36,7 @@ func NewReplica(primaryUrl, authToken string) (*sql.DB, error) {
 	db := sql.OpenDB(connector)
 	return db, nil
 }
+
+func (l *LibsqlClient) Health() error {
+  return l.DB.Ping()
+}

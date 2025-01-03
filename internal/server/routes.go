@@ -16,6 +16,7 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("GET /v1/runes2", middleware.CacheControl(s.GetRunes2(), 5))
 	mux.Handle("GET /v1/cores2", middleware.CacheControl(s.GetCores2(), 5))
 	mux.Handle("GET /v1/fragments2", middleware.CacheControl(s.GetFragments2(), 5))
+  mux.Handle("GET /health", s.HealthHandler())
 
 	return mux
 }
