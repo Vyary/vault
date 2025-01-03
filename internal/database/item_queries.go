@@ -7,18 +7,27 @@ import (
 
 func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
 	query := `
-  SELECT u.item_id, u.name, u.base, COALESCE(i.image, ''), COALESCE(p.value, 0), COALESCE(p.type, ''), COALESCE(p.listed, 0)
-  FROM uniques2 u
-  LEFT JOIN images i ON u.item_id = i.item_id
-  LEFT JOIN (
-    SELECT item_id, value, type, listed
-    FROM prices p1
-    WHERE p1.timestamp = (
-      SELECT MAX(p2.timestamp)
-      FROM prices p2
-      WHERE p2.item_id = p1.item_id
-    )
-  ) p ON u.item_id = p.item_id`
+  WITH latest_prices AS (
+    SELECT 
+      item_id, 
+      value, 
+      type, 
+      listed, 
+      ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY timestamp DESC) AS row_num
+    FROM prices
+  )
+  SELECT 
+    u.item_id, 
+    u.name, 
+    u.base, 
+    COALESCE(i.image, '') AS image, 
+    COALESCE(lp.value, 0) AS value, 
+    COALESCE(lp.type, '') AS type, 
+    COALESCE(lp.listed, 0) AS listed
+  FROM 
+    uniques2 u
+    LEFT JOIN images i ON u.item_id = i.item_id
+    LEFT JOIN latest_prices lp ON u.item_id = lp.item_id AND lp.row_num = 1;`
 
 	rows, err := l.DB.Query(query)
 	if err != nil {
@@ -43,18 +52,25 @@ func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
 
 func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
 	query := fmt.Sprintf(`
-  SELECT u.item_id, u.name, COALESCE(i.image, ''), COALESCE(p.value, 0), COALESCE(p.type, ''), COALESCE(p.listed, 0)
+  WITH latest_prices AS (
+    SELECT 
+      item_id, 
+      value, 
+      type, 
+      listed, 
+      ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY timestamp DESC) AS row_num
+    FROM prices
+  )
+  SELECT 
+    u.item_id, 
+    u.name, 
+    COALESCE(i.image, '') AS image, 
+    COALESCE(lp.value, 0) AS value, 
+    COALESCE(lp.type, '') AS type, 
+    COALESCE(lp.listed, 0) AS listed
   FROM %s u
   LEFT JOIN images i ON u.item_id = i.item_id
-  LEFT JOIN (
-    SELECT item_id, value, type, listed
-    FROM prices p1
-    WHERE p1.timestamp = (
-      SELECT MAX(p2.timestamp)
-      FROM prices p2
-      WHERE p2.item_id = p1.item_id
-    )
-  ) p ON u.item_id = p.item_id`, tableName)
+  LEFT JOIN latest_prices lp ON u.item_id = lp.item_id AND lp.row_num = 1`, tableName)
 
 	rows, err := l.DB.Query(query)
 	if err != nil {
