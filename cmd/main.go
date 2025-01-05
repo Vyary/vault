@@ -9,8 +9,7 @@ import (
 	"syscall"
 	"time"
 	"vault/internal/database"
-	_ "net/http/pprof"
-  "vault/internal/server"
+	"vault/internal/server"
 )
 
 func gracefulShutdown(apiServer *http.Server, done chan struct{}) {
@@ -54,11 +53,6 @@ func main() {
 	go gracefulShutdown(server, done)
 
 	slog.Info("Server is running", "port", port)
-
-    go func() {
-        slog.Info("Starting pprof server on :6060")
-        http.ListenAndServe(":6060", nil)
-    }()
 
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		slog.Error("HTTP server error", "error", err)
