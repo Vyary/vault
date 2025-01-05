@@ -20,8 +20,9 @@ func New(db database.Client, port string) *http.Server {
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),
 		Handler:      handler,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  10 * time.Second,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
 	}
 
 	return server

@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the binary (static binary)
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/main ./cmd/main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GOGC=50 go build -ldflags="-s -w" -o bin/main ./cmd/main.go
 
 # Stage 2: Final image
 FROM gcr.io/distroless/cc

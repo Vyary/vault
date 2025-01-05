@@ -33,6 +33,7 @@ func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query uniques items for poe2: %w", err)
 	}
+	defer rows.Close()
 
 	var uniques []models.UniquesDTO
 
@@ -76,6 +77,7 @@ func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to query %s for poe2: %w", tableName, err)
 	}
+	defer rows.Close()
 
 	var exchItems []models.ExchDTO
 
