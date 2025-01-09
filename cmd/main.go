@@ -38,7 +38,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	db, err := database.NewReplica(primaryUrl, authToken)
+	db, err := database.NewRemote(primaryUrl, authToken)
 	if err != nil {
 		slog.Error("Error initializing database", "error", err)
 		os.Exit(1)
