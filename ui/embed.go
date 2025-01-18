@@ -5,7 +5,10 @@ import (
 	"io/fs"
 )
 
-//go:embed client/*
+//go:embed static/*
 var WebClient embed.FS
 
-var Web, _ = fs.Sub(WebClient, "client")
+var Web, _ = fs.Sub(WebClient, "static")
+
+//go:embed index.html
+var Index embed.FS
