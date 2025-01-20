@@ -12,9 +12,10 @@ func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
       item_id, 
       value, 
       type, 
-      listed, 
-      ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY timestamp DESC) AS row_num
+      listed
     FROM prices
+    GROUP BY item_id
+    HAVING timestamp = MAX(timestamp)
   )
   SELECT 
     u.item_id, 
@@ -27,7 +28,7 @@ func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
   FROM 
     uniques2 u
     LEFT JOIN images i ON u.item_id = i.item_id
-    LEFT JOIN latest_prices lp ON u.item_id = lp.item_id AND lp.row_num = 1;`
+    LEFT JOIN latest_prices lp ON u.item_id = lp.item_id`
 
 	rows, err := l.DB.Query(query)
 	if err != nil {
@@ -58,9 +59,10 @@ func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
       item_id, 
       value, 
       type, 
-      listed, 
-      ROW_NUMBER() OVER (PARTITION BY item_id ORDER BY timestamp DESC) AS row_num
+      listed
     FROM prices
+    GROUP BY item_id
+    HAVING timestamp = MAX(timestamp)
   )
   SELECT 
     u.item_id, 
@@ -71,7 +73,7 @@ func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
     COALESCE(lp.listed, 0) AS listed
   FROM %s u
   LEFT JOIN images i ON u.item_id = i.item_id
-  LEFT JOIN latest_prices lp ON u.item_id = lp.item_id AND lp.row_num = 1`, tableName)
+  LEFT JOIN latest_prices lp ON u.item_id = lp.item_id`, tableName)
 
 	rows, err := l.DB.Query(query)
 	if err != nil {

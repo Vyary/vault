@@ -26,7 +26,7 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("GET /artifacts", http.StripPrefix("/artifacts", cacheIndex))
 	mux.Handle("GET /omens", http.StripPrefix("/omens", cacheIndex))
 	mux.Handle("GET /distillations", http.StripPrefix("/distillations", cacheIndex))
-	mux.Handle("GET /waystones", http.StripPrefix("/waystones", cacheIndex))
+	mux.Handle("GET /tablets", http.StripPrefix("/tablets", cacheIndex))
 
 	mux.Handle("GET /health", s.HealthHandler())
 
