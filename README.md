@@ -9,7 +9,7 @@ Exile Profit is a platform for tracking unique and rare items in the popular gam
 
 ## Usage
 
-Visit the [Exile Profit website](https://exile-profit.up.railway.app/) to start browsing and filtering items.
+Visit the [Exile Profit website](https://exile-profit.com) to start browsing and filtering items.
 
 ## License
 
