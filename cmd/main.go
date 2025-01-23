@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 	"vault/internal/database"
+	"vault/internal/proxy"
 	"vault/internal/server"
 )
 
@@ -46,17 +47,29 @@ func main() {
 	defer db.Close()
 
 	client := &database.LibsqlClient{DB: db}
-
 	server := server.New(client, port)
 	done := make(chan struct{})
 
+  proxy, err := proxy.New(port)
+  if err != nil {
+    slog.Error("starting proxy", "error", err)
+  }
+
 	go gracefulShutdown(server, done)
 
-	slog.Info("Server is running", "port", port)
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("HTTP server error", "error", err)
+		}
+	}()
 
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		slog.Error("HTTP server error", "error", err)
-	}
+  go func ()  {
+		certFile := "/etc/letsencrypt/live/eu.exile-profit.com/fullchain.pem"
+    keyFile := "/etc/letsencrypt/live/eu.exile-profit.com/privkey.pem"
+    if err := proxy.ListenAndServeTLS(certFile, keyFile); err != nil {
+      slog.Error("Proxy server error", "error", err)
+    }
+  }()
 
 	<-done
 	slog.Info("Graceful shutdown complete.")

@@ -1,0 +1,21 @@
+services:
+  vault:
+    image: vyary/vault:latest
+    ports:
+      - "8080:8080"
+    secrets:
+      - port
+      - db-url
+      - db-auth
+    environment:
+      PORT: ${PORT:-port}
+      DB_URL: ${DB_URL:-default_url}
+      DB_AUTH_TOKEN: ${DB_AUTH_TOKEN:-default_auth_token}
+
+secrets:
+  port:
+    external: true
+  db-url:
+    external: true
+  db-auth:
+    external: true

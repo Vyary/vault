@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 	"vault/internal/database"
@@ -24,6 +25,8 @@ func New(db database.Client, port string) *http.Server {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}
+
+	slog.Info(fmt.Sprintf("Starting API Server on %s...", port))
 
 	return server
 }
