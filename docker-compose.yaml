@@ -1,6 +1,6 @@
 services:
   vault:
-    image: vyary/vault:latest
+    image: vyary/vault:1780f230de88c02250d3b811a07f547044114aba
     ports:
       - "8080:8080"
     secrets:
@@ -11,6 +11,8 @@ services:
       PORT: ${PORT:-port}
       DB_URL: ${DB_URL:-default_url}
       DB_AUTH_TOKEN: ${DB_AUTH_TOKEN:-default_auth_token}
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
 
 secrets:
   port:

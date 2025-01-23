@@ -26,7 +26,6 @@ func New(db database.Client, port string) *http.Server {
 		WriteTimeout: 5 * time.Second,
 	}
 
-	slog.Info(fmt.Sprintf("Starting API Server on %s...", port))
 
 	return server
 }
