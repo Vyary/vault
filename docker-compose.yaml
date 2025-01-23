@@ -2,8 +2,8 @@ services:
   vault:
     image: vyary/vault:latest
     ports:
+      - "80:80"
       - "443:443"
-      - "8080:8080"
     secrets:
       - port
       - db-url
@@ -12,7 +12,7 @@ services:
       PORT: ${PORT:-port}
       DB_URL: ${DB_URL:-default_url}
       DB_AUTH_TOKEN: ${DB_AUTH_TOKEN:-default_auth_token}
-      PROXY_TARGET: "localhost:8080"
+      PROXY_TARGET: "http://localhost:8080"
       CERT_FILE: "/etc/letsencrypt/live/eu.exile-profit.com/fullchain.pem"
       KEY_FILE: "/etc/letsencrypt/live/eu.exile-profit.com/privkey.pem"
     volumes:

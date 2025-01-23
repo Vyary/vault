@@ -7,9 +7,7 @@ import (
 	"net/url"
 )
 
-type Proxy struct{}
-
-func New(targetURL string) (*http.Server, error) {
+func NewSecure(targetURL string) (*http.Server, error) {
 	target, err := url.Parse(targetURL)
 	if err != nil {
 		return nil, err
@@ -26,4 +24,18 @@ func New(targetURL string) (*http.Server, error) {
 	}
 
 	return server, nil
+}
+
+func New() *http.Server {
+	return &http.Server{
+		Addr:    ":80",
+		Handler: redirectToHTTPS(),
+	}
+}
+
+func redirectToHTTPS() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		httpsURL := "https://" + r.Host + r.URL.RequestURI()
+		http.Redirect(w, r, httpsURL, http.StatusMovedPermanently)
+	})
 }

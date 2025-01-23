@@ -54,7 +54,7 @@ func main() {
 	server := server.New(client, port)
 	done := make(chan struct{})
 
-	proxy, err := proxy.New(proxyTarget)
+	proxy, err := proxy.NewSecure(proxyTarget)
 	if err != nil {
 		slog.Error("starting proxy", "error", err)
 	}
