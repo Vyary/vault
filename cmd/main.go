@@ -54,10 +54,12 @@ func main() {
 	server := server.New(client, port)
 	done := make(chan struct{})
 
-	proxy, err := proxy.NewSecure(proxyTarget)
+	secureProxy, err := proxy.NewSecure(proxyTarget)
 	if err != nil {
 		slog.Error("starting proxy", "error", err)
 	}
+
+	proxy := proxy.New()
 
 	go gracefulShutdown(server, done)
 
@@ -72,7 +74,15 @@ func main() {
 	go func() {
 		slog.Info("Proxy Server on :443...")
 
-		if err := proxy.ListenAndServeTLS(certFile, keyFile); err != nil {
+		if err := secureProxy.ListenAndServeTLS(certFile, keyFile); err != nil {
+			slog.Error("Secure proxy server error", "error", err)
+		}
+	}()
+
+	go func() {
+		slog.Info("Proxy Server on :80...")
+
+		if err := proxy.ListenAndServe(); err != nil {
 			slog.Error("Proxy server error", "error", err)
 		}
 	}()
