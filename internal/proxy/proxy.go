@@ -9,8 +9,8 @@ import (
 
 type Proxy struct{}
 
-func New(port string) (*http.Server, error) {
-  target, err := url.Parse("localhost:" + port)
+func New(targetURL string) (*http.Server, error) {
+	target, err := url.Parse(targetURL)
 	if err != nil {
 		return nil, err
 	}

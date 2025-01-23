@@ -36,6 +36,9 @@ func main() {
 	port := os.Getenv("PORT")
 	primaryUrl := os.Getenv("DB_URL")
 	authToken := os.Getenv("DB_AUTH_TOKEN")
+	proxyTarget := os.Getenv("PROXY_TARGET")
+	certFile := os.Getenv("CERT_FILE")
+	keyFile := os.Getenv("KEY_FILE")
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
@@ -51,7 +54,7 @@ func main() {
 	server := server.New(client, port)
 	done := make(chan struct{})
 
-	proxy, err := proxy.New(port)
+	proxy, err := proxy.New(proxyTarget)
 	if err != nil {
 		slog.Error("starting proxy", "error", err)
 	}
@@ -67,9 +70,6 @@ func main() {
 	}()
 
 	go func() {
-		certFile := "/etc/letsencrypt/live/eu.exile-profit.com/fullchain.pem"
-		keyFile := "/etc/letsencrypt/live/eu.exile-profit.com/privkey.pem"
-
 		slog.Info("Proxy Server on :443...")
 
 		if err := proxy.ListenAndServeTLS(certFile, keyFile); err != nil {
