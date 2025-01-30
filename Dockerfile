@@ -13,8 +13,9 @@ RUN go mod download
 # Copy the source code
 COPY . .
 
-# Build the binary (static binary)
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 GOGC=50 go build -ldflags="-s -w" -o bin/main ./cmd/main.go
+# Build the binary for multiple architectures
+ARG TARGETARCH
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=$TARGETARCH go build -ldflags="-s -w" -o bin/main ./cmd/main.go
 
 # Stage 2: Final image
 FROM gcr.io/distroless/cc
@@ -23,6 +24,8 @@ FROM gcr.io/distroless/cc
 WORKDIR /app
 
 COPY --from=builder /app/bin/main bin/main
+
+COPY certs /app/certs
 
 # Expose port
 EXPOSE 8080
