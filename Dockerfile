@@ -25,8 +25,6 @@ WORKDIR /app
 
 COPY --from=builder /app/bin/main bin/main
 
-COPY certs /app/certs
-
 # Expose port
 EXPOSE 8080
 
