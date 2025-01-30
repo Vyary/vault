@@ -31,5 +31,5 @@ jobs:
           push: true
           platforms: linux/${{ matrix.arch }}
           tags: |
-            vyary/vault:latest
-            vyary/vault:${{ github.sha }}
+            vyary/vault:${{ matrix.arch }}-latest
+            vyary/vault:${{ matrix.arch }}-${{ github.sha }}
