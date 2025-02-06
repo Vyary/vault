@@ -67,6 +67,7 @@ func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
   SELECT 
     u.item_id, 
     u.name, 
+    u.alt,
     COALESCE(i.image, '') AS image, 
     COALESCE(lp.value, 0) AS value, 
     COALESCE(lp.type, '') AS type, 
@@ -86,7 +87,7 @@ func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
 	for rows.Next() {
 		var exchItem models.ExchDTO
 
-		err := rows.Scan(&exchItem.ItemID, &exchItem.Name, &exchItem.Image, &exchItem.Price.Value, &exchItem.Price.Type, &exchItem.Price.Listed)
+		err := rows.Scan(&exchItem.ItemID, &exchItem.Name, &exchItem.Alt, &exchItem.Image, &exchItem.Price.Value, &exchItem.Price.Type, &exchItem.Price.Listed)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan poe2 %s: %w", tableName, err)
 		}

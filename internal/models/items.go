@@ -17,6 +17,7 @@ type UniquesDTO struct {
 type ExchDTO struct {
 	ItemID int    `json:"id"`
 	Name   string `json:"name"`
+	Alt    string `json:"alt"`
 	Image  string `json:"image"`
 	Price  Price  `json:"price"`
 }

@@ -20,7 +20,6 @@ func (s *Server) routes() http.Handler {
 	mux.Handle("GET /v1/omens2", s.Exch2Handler("omens2"))
 	mux.Handle("GET /v1/distillations2", s.Exch2Handler("distillations2"))
 	mux.Handle("GET /v1/waystones2", s.Exch2Handler("waystones2"))
-	mux.Handle("GET /v1/bases2", s.Exch2Handler("bases2"))
 
 	return middleware.CacheControl(mux, 5)
 }
