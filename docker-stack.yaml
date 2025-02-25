@@ -9,15 +9,13 @@ services:
     secrets:
       - db-url
       - db-auth
-      - cert
-      - key
     environment:
       PORT: 8080
       DB_URL: ${DB_URL:-default_url}
       DB_AUTH_TOKEN: ${DB_AUTH_TOKEN:-default_auth_token}
       PROXY_TARGET: "http://localhost:8080"
-      CERT_FILE: "/etc/letsencrypt/live/fra.exile-profit.com/fullchain.pem"
-      KEY_FILE: "/etc/letsencrypt/live/fra.exile-profit.com/privkey.pem"
+      CERT_FILE: "/etc/letsencrypt/live/mw.exile-profit.com/fullchain.pem"
+      KEY_FILE: "/etc/letsencrypt/live/mw.exile-profit.com/privkey.pem"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
 
@@ -25,8 +23,4 @@ secrets:
   db-url:
     external: true
   db-auth:
-    external: true
-  cert:
-    external: true
-  key:
     external: true
