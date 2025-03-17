@@ -13,7 +13,7 @@ import (
 func NewReplica(primaryUrl, authToken string) (*sql.DB, error) {
 	dir := os.Getenv("DB_DIR")
 	if dir == "" {
-		dir = "/data"
+		dir = "/vault"
 	}
 
 	dbName := "local.db"

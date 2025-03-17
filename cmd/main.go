@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 	"vault/internal/database"
-	"vault/internal/proxy"
 	"vault/internal/server"
 )
 
@@ -36,9 +35,6 @@ func main() {
 	port := os.Getenv("PORT")
 	primaryUrl := os.Getenv("DB_URL")
 	authToken := os.Getenv("DB_AUTH_TOKEN")
-	proxyTarget := os.Getenv("PROXY_TARGET")
-	certFile := os.Getenv("CERT_FILE")
-	keyFile := os.Getenv("KEY_FILE")
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
@@ -54,13 +50,6 @@ func main() {
 	server := server.New(client, port)
 	done := make(chan struct{})
 
-	secureProxy, err := proxy.NewSecure(proxyTarget)
-	if err != nil {
-		slog.Error("starting proxy", "error", err)
-	}
-
-	proxy := proxy.New()
-
 	go gracefulShutdown(server, done)
 
 	go func() {
@@ -68,22 +57,6 @@ func main() {
 
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("HTTP server error", "error", err)
-		}
-	}()
-
-	go func() {
-		slog.Info("Proxy Server on :443...")
-
-		if err := secureProxy.ListenAndServeTLS(certFile, keyFile); err != nil {
-			slog.Error("Secure proxy server error", "error", err)
-		}
-	}()
-
-	go func() {
-		slog.Info("Proxy Server on :80...")
-
-		if err := proxy.ListenAndServe(); err != nil {
-			slog.Error("Proxy server error", "error", err)
 		}
 	}()
 
