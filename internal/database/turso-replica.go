@@ -11,7 +11,11 @@ import (
 )
 
 func NewReplica(primaryUrl, authToken string) (*sql.DB, error) {
-	dir := "./internal/database/local"
+	dir := os.Getenv("DB_DIR")
+	if dir == "" {
+		dir = "/data"
+	}
+
 	dbName := "local.db"
 
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
