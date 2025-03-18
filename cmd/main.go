@@ -2,64 +2,68 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 	"vault/internal/database"
 	"vault/internal/server"
+	"vault/internal/telemetry"
+
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
 
-func gracefulShutdown(apiServer *http.Server, done chan struct{}) {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
-
-	<-ctx.Done()
-	slog.Info("Shutting down gracefully, press Ctrl+C again to force")
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := apiServer.Shutdown(shutdownCtx); err != nil {
-		slog.Error("Server forced to shutdown with error", "error", err)
-	}
-
-	slog.Info("Server exiting")
-	close(done)
-}
+var (
+	service = os.Getenv("SERVICE_NAME")
+	logger  = otelslog.NewLogger(service)
+)
 
 func main() {
-	port := os.Getenv("PORT")
-	primaryUrl := os.Getenv("DB_URL")
-	authToken := os.Getenv("DB_AUTH_TOKEN")
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
-
-	db, err := database.NewReplica(primaryUrl, authToken)
-	if err != nil {
-		slog.Error("Error initializing database", "error", err)
+	if err := run(); err != nil {
+		slog.Error("failed to start api server", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+}
+
+func run() error {
+	port := os.Getenv("PORT")
+	primarURL := os.Getenv("DB_URL")
+	authToken := os.Getenv("DB_AUTH_TOKEN")
+
+	slog.SetDefault(logger)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	otelShutdown, err := telemetry.SetupOTelSDK(ctx)
+	if err != nil {
+		return err // TODO: add context to error
+	}
+	defer otelShutdown(context.Background())
+
+	db, err := database.NewReplica(primarURL, authToken)
+	if err != nil {
+		return err // TODO: add more context
+	}
 
 	client := &database.LibsqlClient{DB: db}
-	server := server.New(client, port)
-	done := make(chan struct{})
+	srv := server.New(client, port)
 
-	go gracefulShutdown(server, done)
-
+	srvErr := make(chan error, 1)
 	go func() {
-		slog.Info(fmt.Sprintf("Starting API Server on %s...", port))
-
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("HTTP server error", "error", err)
-		}
+		srvErr <- srv.ListenAndServe()
 	}()
 
-	<-done
-	slog.Info("Graceful shutdown complete.")
+	select {
+	case err = <-srvErr:
+		return err // TODO: more context
+	case <-ctx.Done():
+		stop()
+	}
+
+	ctxTO, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	return srv.Shutdown(ctxTO)
 }
