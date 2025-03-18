@@ -5,11 +5,14 @@ import (
 	"net/http"
 	"vault/internal/models"
 	"vault/internal/utils"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 func (s *Server) FeedbackHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 		ctx, span := tracer.Start(ctx, "POST feedback")
 		defer span.End()
 
