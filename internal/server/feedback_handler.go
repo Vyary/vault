@@ -9,7 +9,8 @@ import (
 
 func (s *Server) FeedbackHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := tracer.Start(r.Context(), "POST feedback")
+		ctx := r.Context()
+		ctx, span := tracer.Start(ctx, "POST feedback")
 		defer span.End()
 
 		var feedback models.Feedback
@@ -20,13 +21,25 @@ func (s *Server) FeedbackHandler() http.Handler {
 
 		problems := feedback.Validate()
 		if len(problems) > 0 {
-			utils.Error(w, http.StatusUnprocessableEntity, "Feedback validation failed.", nil, problems)
+			utils.Error(
+				w,
+				http.StatusUnprocessableEntity,
+				"Feedback validation failed.",
+				nil,
+				problems,
+			)
 			return
 		}
 
 		err := s.db.SaveFeedback(ctx, feedback)
 		if err != nil {
-			utils.Error(w, http.StatusInternalServerError, "An internal server error occurred. Please try again later.", nil, nil)
+			utils.Error(
+				w,
+				http.StatusInternalServerError,
+				"An internal server error occurred. Please try again later.",
+				nil,
+				nil,
+			)
 			slog.Error("creating strategy", "error", err, "message", feedback)
 			return
 		}

@@ -18,7 +18,8 @@ var (
 
 func (s *Server) Uniques2Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := tracer.Start(r.Context(), "GET uniques2")
+		ctx := r.Context()
+		ctx, span := tracer.Start(ctx, "GET uniques2")
 		defer span.End()
 
 		u, err := s.db.GetUniques2(ctx)
@@ -48,7 +49,8 @@ func (s *Server) Uniques2Handler() http.Handler {
 
 func (s *Server) Exch2Handler(tableName string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := tracer.Start(r.Context(), fmt.Sprintf("GET %s", tableName))
+		ctx := r.Context()
+		ctx, span := tracer.Start(ctx, fmt.Sprintf("GET %s", tableName))
 		defer span.End()
 
 		u, err := s.db.GetExch(ctx, tableName)
