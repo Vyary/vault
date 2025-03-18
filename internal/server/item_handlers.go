@@ -9,6 +9,7 @@ import (
 	"vault/internal/utils"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 
 func (s *Server) Uniques2Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 		ctx, span := tracer.Start(ctx, "GET uniques2")
 		defer span.End()
 
@@ -49,7 +50,7 @@ func (s *Server) Uniques2Handler() http.Handler {
 
 func (s *Server) Exch2Handler(tableName string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 		ctx, span := tracer.Start(ctx, fmt.Sprintf("GET %s", tableName))
 		defer span.End()
 
