@@ -1,11 +1,15 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"vault/internal/models"
 )
 
-func (l *LibsqlClient) SaveFeedback(feedback models.Feedback) error {
+func (l *LibsqlClient) SaveFeedback(ctx context.Context, feedback models.Feedback) error {
+	ctx, span := tracer.Start(ctx, "INSERT feedback")
+	defer span.End()
+
 	query := `
   INSERT INTO feedback (name, email, message)
   VALUES (?, ?, ?)`

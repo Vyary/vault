@@ -1,15 +1,16 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"vault/internal/models"
 )
 
 type Client interface {
-	GetUniques2() ([]models.UniquesDTO, error)
-	GetExch(tableName string) ([]models.ExchDTO, error)
+	GetUniques2(ctx context.Context) ([]models.UniquesDTO, error)
+	GetExch(ctx context.Context, tableName string) ([]models.ExchDTO, error)
 	Health() error
-  SaveFeedback(feedback models.Feedback) error
+	SaveFeedback(ctx context.Context, feedback models.Feedback) error
 }
 
 type LibsqlClient struct {
@@ -17,5 +18,5 @@ type LibsqlClient struct {
 }
 
 func (l *LibsqlClient) Health() error {
-  return l.DB.Ping()
+	return l.DB.Ping()
 }

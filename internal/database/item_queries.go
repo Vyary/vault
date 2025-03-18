@@ -1,11 +1,23 @@
 package database
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"vault/internal/models"
+
+	"go.opentelemetry.io/otel"
 )
 
-func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
+var (
+	service = os.Getenv("SERVICE_NAME")
+	tracer  = otel.Tracer(service)
+)
+
+func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, error) {
+	_, span := tracer.Start(ctx, "QUERY uniques2")
+	defer span.End()
+
 	query := `
   WITH latest_prices AS (
     SELECT 
@@ -41,7 +53,15 @@ func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
 	for rows.Next() {
 		var unique models.UniquesDTO
 
-		err := rows.Scan(&unique.ItemID, &unique.Name, &unique.Base, &unique.Image, &unique.Price.Value, &unique.Price.Type, &unique.Price.Listed)
+		err := rows.Scan(
+			&unique.ItemID,
+			&unique.Name,
+			&unique.Base,
+			&unique.Image,
+			&unique.Price.Value,
+			&unique.Price.Type,
+			&unique.Price.Listed,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan poe2 unique: %w", err)
 		}
@@ -52,7 +72,10 @@ func (l *LibsqlClient) GetUniques2() ([]models.UniquesDTO, error) {
 	return uniques, nil
 }
 
-func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
+func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.ExchDTO, error) {
+	_, span := tracer.Start(ctx, fmt.Sprintf("QUERY %s", tableName))
+	defer span.End()
+
 	query := fmt.Sprintf(`
   WITH latest_prices AS (
     SELECT 
@@ -87,7 +110,15 @@ func (l *LibsqlClient) GetExch(tableName string) ([]models.ExchDTO, error) {
 	for rows.Next() {
 		var exchItem models.ExchDTO
 
-		err := rows.Scan(&exchItem.ItemID, &exchItem.Name, &exchItem.Alt, &exchItem.Image, &exchItem.Price.Value, &exchItem.Price.Type, &exchItem.Price.Listed)
+		err := rows.Scan(
+			&exchItem.ItemID,
+			&exchItem.Name,
+			&exchItem.Alt,
+			&exchItem.Image,
+			&exchItem.Price.Value,
+			&exchItem.Price.Type,
+			&exchItem.Price.Listed,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan poe2 %s: %w", tableName, err)
 		}
