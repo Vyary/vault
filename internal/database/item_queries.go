@@ -7,6 +7,8 @@ import (
 	"vault/internal/models"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -15,7 +17,7 @@ var (
 )
 
 func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, error) {
-	_, span := tracer.Start(ctx, "QUERY uniques2")
+	_, span := tracer.Start(ctx, "QUERY uniques2", trace.WithSpanKind(trace.SpanKindInternal))
 	defer span.End()
 
 	query := `
@@ -44,6 +46,9 @@ func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, er
 
 	rows, err := l.DB.Query(query)
 	if err != nil {
+		span.SetStatus(codes.Error, "failed to query uniques2")
+		span.RecordError(err)
+
 		return nil, fmt.Errorf("failed to query uniques items for poe2: %w", err)
 	}
 	defer rows.Close()
@@ -63,17 +68,25 @@ func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, er
 			&unique.Price.Listed,
 		)
 		if err != nil {
+			span.SetStatus(codes.Error, "failed to scan uniques2")
+			span.RecordError(err)
+
 			return nil, fmt.Errorf("failed to scan poe2 unique: %w", err)
 		}
 
 		uniques = append(uniques, unique)
 	}
 
+	span.SetStatus(codes.Ok, "successfully retrieved uniques2")
 	return uniques, nil
 }
 
 func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.ExchDTO, error) {
-	_, span := tracer.Start(ctx, fmt.Sprintf("QUERY %s", tableName))
+	_, span := tracer.Start(
+		ctx,
+		fmt.Sprintf("QUERY %s", tableName),
+		trace.WithSpanKind(trace.SpanKindInternal),
+	)
 	defer span.End()
 
 	query := fmt.Sprintf(`
@@ -101,6 +114,9 @@ func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.
 
 	rows, err := l.DB.Query(query)
 	if err != nil {
+		span.SetStatus(codes.Error, fmt.Sprintf("failed to query %s", tableName))
+		span.RecordError(err)
+
 		return nil, fmt.Errorf("failed to query %s for poe2: %w", tableName, err)
 	}
 	defer rows.Close()
@@ -120,11 +136,15 @@ func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.
 			&exchItem.Price.Listed,
 		)
 		if err != nil {
+			span.SetStatus(codes.Error, fmt.Sprintf("failed to scan %s", tableName))
+			span.RecordError(err)
+
 			return nil, fmt.Errorf("failed to scan poe2 %s: %w", tableName, err)
 		}
 
 		exchItems = append(exchItems, exchItem)
 	}
 
+	span.SetStatus(codes.Ok, fmt.Sprintf("successfully retrieved %s", tableName))
 	return exchItems, nil
 }
