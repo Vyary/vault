@@ -9,7 +9,7 @@ import (
 	"time"
 	"vault/internal/database"
 	"vault/internal/server"
-	"vault/internal/telemetry"
+	"vault/pkg/telemetry"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
