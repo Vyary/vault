@@ -6,10 +6,9 @@ import (
 
 func Cors(next http.Handler) http.Handler {
 	const (
-		allowedMethods    = "GET, POST, PUT, DELETE, OPTIONS"
-		allowedHeaders    = "Content-Type, Authorization"
-		allowCredentials  = "true"
-		allowOriginHeader = "*"
+		allowedMethods   = "GET, POST, PUT, DELETE, OPTIONS"
+		allowedHeaders   = "Content-Type, Authorization"
+		allowCredentials = "true"
 	)
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

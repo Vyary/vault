@@ -15,7 +15,7 @@ type Server struct {
 func New(db database.Client, port string) *http.Server {
 	s := &Server{db: db}
 
-	handler := middleware.Cors(middleware.Time(s.routes()))
+	handler := middleware.Time(s.routes())
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),
