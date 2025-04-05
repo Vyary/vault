@@ -16,7 +16,10 @@ var (
 	tracer  = otel.Tracer(service)
 )
 
-func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, error) {
+func (l *LibsqlClient) GetUniques2(
+	ctx context.Context,
+	league string,
+) ([]models.UniquesDTO, error) {
 	_, span := tracer.Start(ctx, "QUERY uniques2", trace.WithSpanKind(trace.SpanKindInternal))
 	defer span.End()
 
@@ -28,6 +31,7 @@ func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, er
       type, 
       listed
     FROM prices
+    WHERE league = ?
     GROUP BY item_id
     HAVING timestamp = MAX(timestamp)
   )
@@ -44,7 +48,7 @@ func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, er
     LEFT JOIN images i ON u.item_id = i.item_id
     LEFT JOIN latest_prices lp ON u.item_id = lp.item_id`
 
-	rows, err := l.DB.Query(query)
+	rows, err := l.DB.Query(query, league)
 	if err != nil {
 		span.SetStatus(codes.Error, "failed to query uniques2")
 		span.RecordError(err)
@@ -81,10 +85,14 @@ func (l *LibsqlClient) GetUniques2(ctx context.Context) ([]models.UniquesDTO, er
 	return uniques, nil
 }
 
-func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.ExchDTO, error) {
+func (l *LibsqlClient) GetExch(
+	ctx context.Context,
+	league string,
+	table string,
+) ([]models.ExchDTO, error) {
 	_, span := tracer.Start(
 		ctx,
-		fmt.Sprintf("QUERY %s", tableName),
+		fmt.Sprintf("QUERY %s", table),
 		trace.WithSpanKind(trace.SpanKindInternal),
 	)
 	defer span.End()
@@ -97,6 +105,7 @@ func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.
       type, 
       listed
     FROM prices
+    WHERE league = ?
     GROUP BY item_id
     HAVING timestamp = MAX(timestamp)
   )
@@ -110,14 +119,14 @@ func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.
     COALESCE(lp.listed, 0) AS listed
   FROM %s u
   LEFT JOIN images i ON u.item_id = i.item_id
-  LEFT JOIN latest_prices lp ON u.item_id = lp.item_id`, tableName)
+  LEFT JOIN latest_prices lp ON u.item_id = lp.item_id`, table)
 
-	rows, err := l.DB.Query(query)
+	rows, err := l.DB.Query(query, league)
 	if err != nil {
-		span.SetStatus(codes.Error, fmt.Sprintf("failed to query %s", tableName))
+		span.SetStatus(codes.Error, fmt.Sprintf("failed to query %s", table))
 		span.RecordError(err)
 
-		return nil, fmt.Errorf("failed to query %s for poe2: %w", tableName, err)
+		return nil, fmt.Errorf("failed to query %s for poe2: %w", table, err)
 	}
 	defer rows.Close()
 
@@ -136,15 +145,15 @@ func (l *LibsqlClient) GetExch(ctx context.Context, tableName string) ([]models.
 			&exchItem.Price.Listed,
 		)
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("failed to scan %s", tableName))
+			span.SetStatus(codes.Error, fmt.Sprintf("failed to scan %s", table))
 			span.RecordError(err)
 
-			return nil, fmt.Errorf("failed to scan poe2 %s: %w", tableName, err)
+			return nil, fmt.Errorf("failed to scan poe2 %s: %w", table, err)
 		}
 
 		exchItems = append(exchItems, exchItem)
 	}
 
-	span.SetStatus(codes.Ok, fmt.Sprintf("successfully retrieved %s", tableName))
+	span.SetStatus(codes.Ok, fmt.Sprintf("successfully retrieved %s", table))
 	return exchItems, nil
 }

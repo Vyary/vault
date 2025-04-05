@@ -19,15 +19,19 @@ var (
 	tracer  = otel.Tracer(service)
 )
 
-func (s *Server) Uniques2Handler() http.Handler {
+func (s *Server) UniquesHandler2() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		league := r.PathValue("league")
+
 		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
-		ctx, span := tracer.Start(ctx, "GET uniques2", trace.WithSpanKind(trace.SpanKindServer))
+		ctx, span := tracer.Start(ctx,
+			fmt.Sprintf("GET %s uniques2", league),
+			trace.WithSpanKind(trace.SpanKindServer))
 		defer span.End()
 
-		u, err := s.db.GetUniques2(ctx)
+		u, err := s.db.GetUniques2(ctx, league)
 		if err != nil {
-			span.SetStatus(codes.Error, "failed to retrieve uniques2")
+			span.SetStatus(codes.Error, fmt.Sprintf("failed to retrieve %s uniques2", league))
 			span.RecordError(err)
 
 			utils.Error(
@@ -47,30 +51,36 @@ func (s *Server) Uniques2Handler() http.Handler {
 		defer gz.Close()
 
 		if err := json.NewEncoder(gz).Encode(u); err != nil {
-			span.SetStatus(codes.Error, "failed to encode uniques2")
+			span.SetStatus(codes.Error, fmt.Sprintf("failed to encode %s uniques2", league))
 			span.RecordError(err)
 
 			utils.Error(w, http.StatusInternalServerError, "Failed to encode response", err, nil)
 			return
 		}
 
-		span.SetStatus(codes.Ok, "successfully retrieved and returned uniques2")
+		span.SetStatus(
+			codes.Ok,
+			fmt.Sprintf("successfully retrieved and returned %s uniques2", league),
+		)
 	})
 }
 
-func (s *Server) Exch2Handler(tableName string) http.Handler {
+func (s *Server) ExchHandler2() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		league := r.PathValue("league")
+		table := r.PathValue("table")
+
 		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 		ctx, span := tracer.Start(
 			ctx,
-			fmt.Sprintf("GET %s", tableName),
+			fmt.Sprintf("GET %s %s", league, table),
 			trace.WithSpanKind(trace.SpanKindServer),
 		)
 		defer span.End()
 
-		u, err := s.db.GetExch(ctx, tableName)
+		u, err := s.db.GetExch(ctx, league, table)
 		if err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("failed to retrieve %s", tableName))
+			span.SetStatus(codes.Error, fmt.Sprintf("failed to retrieve %s %s", league, table))
 			span.RecordError(err)
 
 			utils.Error(
@@ -90,13 +100,16 @@ func (s *Server) Exch2Handler(tableName string) http.Handler {
 		defer gz.Close()
 
 		if err := json.NewEncoder(gz).Encode(u); err != nil {
-			span.SetStatus(codes.Error, fmt.Sprintf("failed to encode %s", tableName))
+			span.SetStatus(codes.Error, fmt.Sprintf("failed to encode %s %s", league, table))
 			span.RecordError(err)
 
 			utils.Error(w, http.StatusInternalServerError, "Failed to encode response", err, nil)
 			return
 		}
 
-		span.SetStatus(codes.Ok, fmt.Sprintf("successfully retrieved and returned %s", tableName))
+		span.SetStatus(
+			codes.Ok,
+			fmt.Sprintf("successfully retrieved and returned %s %s", league, table),
+		)
 	})
 }
