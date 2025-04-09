@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 	"vault/internal/database"
@@ -19,6 +20,7 @@ func New(db database.Client, port string, cors string) *http.Server {
 
 	if cors == "TRUE" {
 		handler = middleware.Cors(handler)
+		slog.Info("CORS enabled")
 	}
 
 	server := &http.Server{

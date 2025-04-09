@@ -30,7 +30,7 @@ func run() error {
 	port := os.Getenv("PORT")
 	primarURL := os.Getenv("DB_URL")
 	authToken := os.Getenv("DB_AUTH_TOKEN")
-  cors := ("CORS")
+	cors := os.Getenv("CORS")
 
 	slog.SetDefault(logger)
 
