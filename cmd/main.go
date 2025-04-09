@@ -30,6 +30,7 @@ func run() error {
 	port := os.Getenv("PORT")
 	primarURL := os.Getenv("DB_URL")
 	authToken := os.Getenv("DB_AUTH_TOKEN")
+  cors := ("CORS")
 
 	slog.SetDefault(logger)
 
@@ -48,7 +49,7 @@ func run() error {
 	}
 
 	client := &database.LibsqlClient{DB: db}
-	srv := server.New(client, port)
+	srv := server.New(client, port, cors)
 
 	srvErr := make(chan error, 1)
 	go func() {

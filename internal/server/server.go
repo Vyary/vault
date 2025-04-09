@@ -12,10 +12,14 @@ type Server struct {
 	db database.Client
 }
 
-func New(db database.Client, port string) *http.Server {
+func New(db database.Client, port string, cors string) *http.Server {
 	s := &Server{db: db}
 
 	handler := middleware.Time(s.routes())
+
+	if cors == "TRUE" {
+		handler = middleware.Cors(handler)
+	}
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),
