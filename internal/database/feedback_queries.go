@@ -10,7 +10,7 @@ import (
 )
 
 func (l *LibsqlClient) SaveFeedback(ctx context.Context, feedback models.Feedback) error {
-	ctx, span := tracer.Start(ctx, "INSERT feedback", trace.WithSpanKind(trace.SpanKindInternal))
+	_, span := tracer.Start(ctx, "INSERT feedback", trace.WithSpanKind(trace.SpanKindInternal))
 	defer span.End()
 
 	query := `

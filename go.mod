@@ -3,6 +3,7 @@ module vault
 go 1.24.2
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/tursodatabase/go-libsql v0.0.0-20250401144753-0be9a6ec7849
 	go.opentelemetry.io/contrib/bridges/otelslog v0.10.0
 	go.opentelemetry.io/otel v1.35.0

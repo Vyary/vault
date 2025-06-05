@@ -11,6 +11,7 @@ import (
 	"vault/internal/server"
 	"vault/pkg/telemetry"
 
+	_ "github.com/joho/godotenv/autoload"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
 
@@ -30,7 +31,6 @@ func run() error {
 	port := os.Getenv("PORT")
 	primarURL := os.Getenv("DB_URL")
 	authToken := os.Getenv("DB_AUTH_TOKEN")
-	cors := os.Getenv("CORS")
 
 	slog.SetDefault(logger)
 
@@ -49,7 +49,7 @@ func run() error {
 	}
 
 	client := &database.LibsqlClient{DB: db}
-	srv := server.New(client, port, cors)
+	srv := server.New(client, port)
 
 	srvErr := make(chan error, 1)
 	go func() {
