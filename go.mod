@@ -1,4 +1,4 @@
-module vault
+module github.com/Vyary/vault
 
 go 1.24.2
 
