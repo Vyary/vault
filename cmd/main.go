@@ -11,6 +11,7 @@ import (
 	"vault/internal/server"
 	"vault/pkg/telemetry"
 
+	"github.com/Vyary/vault/internal/database"
 	_ "github.com/joho/godotenv/autoload"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
@@ -43,7 +44,7 @@ func run() error {
 	}
 	defer otelShutdown(context.Background())
 
-	db, err := database.NewReplica(primarURL, authToken)
+	db, err := database.NewRemote(primarURL, authToken)
 	if err != nil {
 		return err // TODO: add more context
 	}
