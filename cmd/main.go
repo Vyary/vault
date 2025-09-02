@@ -11,7 +11,6 @@ import (
 	"vault/internal/server"
 	"vault/pkg/telemetry"
 
-	"github.com/Vyary/vault/internal/database"
 	_ "github.com/joho/godotenv/autoload"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 )
